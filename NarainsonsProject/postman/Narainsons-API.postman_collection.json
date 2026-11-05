@@ -1,0 +1,4160 @@
+{
+  "info": {
+    "name": "Narainsons API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Sign in first: tokens and the dev OTP are saved into collection variables automatically."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8082/NarainsonsProject"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "staff_token",
+      "value": ""
+    },
+    {
+      "key": "otp",
+      "value": ""
+    },
+    {
+      "key": "file_url",
+      "value": ""
+    },
+    {
+      "key": "cron_secret",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Part 1: Mobile app",
+      "item": [
+        {
+          "name": "System",
+          "item": [
+            {
+              "name": "Health check",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/health",
+                "description": "200 when the app and database are fine, otherwise 503 with a reason. Also at `/api/health`.",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Sign-in and tokens",
+          "item": [
+            {
+              "name": "Send mobile OTP",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/auth/otp/send",
+                "description": "Creates the account on first use. Limit: 5 per number per 15 minutes, 20 per IP per hour. `dev_otp` and `sms_provider_response` appear only when the server has `app.dev.expose_otp=true`, never in production.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mobile_number\": \"9000000001\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Verify mobile OTP",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/auth/otp/verify",
+                "description": "Returns the token block.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mobile_number\": \"9000000001\",\n  \"otp\": \"{{otp}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Password login",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/auth/login",
+                "description": "5 wrong passwords lock the account for 15 minutes. Limit: 60 sign-in calls per IP per 15 minutes.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"asha.verma@test.local\",\n  \"password\": \"AshaPass123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Refresh tokens",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/auth/token/refresh",
+                "description": "Call when an API returns `TOKEN_EXPIRED`. Each refresh token works once: always save the new one. Reusing an old one ends that login. Do not run two refreshes at once.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Forgot password: send OTP",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/auth/password/forgot/send",
+                "description": "Same response whether or not the email exists.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"asha.verma@test.local\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Forgot password: reset",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/auth/password/forgot/reset",
+                "description": "Ends all logins, so send the user to sign-in.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"asha.verma@test.local\",\n  \"otp\": \"{{otp}}\",\n  \"new_password\": \"AshaPass456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Send email OTP",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/auth/email/send",
+                "description": "Same as mobile OTP, using email. Creates the account on first use.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"second.user@test.local\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Verify email OTP",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/auth/email/verify",
+                "description": "Returns the token block.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"second.user@test.local\",\n  \"otp\": \"{{otp}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Logout",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/auth/logout",
+                "description": "Delete the stored tokens either way.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\",\n  \"fcm_token\": \"<token from Firebase SDK>\",\n  \"all_devices\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Profile and onboarding",
+          "item": [
+            {
+              "name": "Get my profile",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/user/me",
+                "description": "Call on every app open to refresh status. Also accepts the token as an `X-Access-Token` header.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Onboarding step 1: basic details",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/user/onboarding",
+                "description": "Steps must be done in order. An earlier step can be sent again to edit it.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"step\": 1,\n  \"name\": \"Asha Verma\",\n  \"first_name\": \"Asha\",\n  \"last_name\": \"Verma\",\n  \"email\": \"asha.verma@test.local\",\n  \"gender\": \"Female\",\n  \"date_of_birth\": \"1995-04-12\",\n  \"age\": 31,\n  \"marital_status\": \"Single\",\n  \"nationality\": \"Indian\",\n  \"alternate_mobile_number\": \"9000000002\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Onboarding step 2: address and work",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/user/onboarding",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"step\": 2,\n  \"current_address\": \"12 MG Road\",\n  \"current_city\": \"Jaipur\",\n  \"current_state\": \"Rajasthan\",\n  \"current_pincode\": \"302001\",\n  \"current_country\": \"India\",\n  \"permanent_address\": \"12 MG Road\",\n  \"permanent_city\": \"Jaipur\",\n  \"permanent_state\": \"Rajasthan\",\n  \"permanent_pincode\": \"302001\",\n  \"permanent_country\": \"India\",\n  \"same_as_current_address\": true,\n  \"employment_type\": \"Salaried\",\n  \"company_name\": \"Acme Pvt Ltd\",\n  \"designation\": \"Accountant\",\n  \"work_experience_months\": 48,\n  \"monthly_income\": 35000,\n  \"annual_income\": 420000,\n  \"income_source\": \"Salary\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Onboarding step 3: KYC, bank, consent",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/user/onboarding",
+                "description": "Sets `kyc_status` to `submitted` and bank verification to `pending`. Staff then verify or reject. If rejected, the reason is in `kyc_rejection_reason`; send this step again to resubmit.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"step\": 3,\n  \"aadhaar_last4\": \"1234\",\n  \"pan_last4\": \"567F\",\n  \"aadhaar_document\": \"/NarainsonsProject/api/v1/files/e711feab43924504a7cd99813714a9b2\",\n  \"pan_document\": \"/NarainsonsProject/api/v1/files/53c72ab0731b4a5e9f4b05caf3537d96\",\n  \"bank_name\": \"HDFC Bank\",\n  \"ifsc_code\": \"HDFC0001234\",\n  \"bank_account_last4\": \"6789\",\n  \"privacy_consent\": true,\n  \"terms_accepted\": true,\n  \"kyc_consent\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Sync device details",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/user/sync",
+                "description": "All fields are optional. Contacts and gallery are not stored while `app.sync.contacts_gallery.enabled=false`, so do not ask users for those permissions.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"device_id\": \"android-abc123\",\n  \"device_type\": \"android\",\n  \"device_name\": \"Asha's phone\",\n  \"device_model\": \"Pixel 8\",\n  \"os_version\": \"14\",\n  \"app_version\": \"1.0.0\",\n  \"time_zone\": \"Asia/Kolkata\",\n  \"latitude\": 26.9124,\n  \"longitude\": 75.7873\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Set or change password",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/user/password",
+                "description": "Ends all other logins and returns new tokens. Replace the stored ones.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"new_password\": \"AshaPass123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete my account",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/user/delete",
+                "description": "Required by the app stores. The mobile and email cannot be registered again.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"confirm\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "File upload",
+          "item": [
+            {
+              "name": "Upload a file",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/files",
+                "description": "Multipart form. Limit: 30 per hour per customer.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": []
+                    },
+                    {
+                      "key": "purpose",
+                      "value": "aadhaar",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Download a file",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/files/1",
+                "description": "Only the owner and staff can read it; anyone else gets 404. Image widgets must send the Authorization header.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Devices and push",
+          "item": [
+            {
+              "name": "Register this phone for push",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/user/devices",
+                "description": "Call after every login and whenever Firebase gives a new token. Dead tokens are removed automatically.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fcm_token\": \"<token from Firebase SDK>\",\n  \"platform\": \"android\",\n  \"device_id\": \"android-abc123\",\n  \"app_version\": \"1.0.0\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Unregister this phone",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/user/devices/remove",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fcm_token\": \"<token from Firebase SDK>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Turn push on or off",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/user/notification-settings",
+                "description": "Off stops push only; the in-app list still fills up.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"enabled\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Home screen",
+          "item": [
+            {
+              "name": "Banners",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/dashboard/banners",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Loan rules",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/dashboard/loan-config",
+                "description": "Build the apply form from this: amounts, tenure, purposes, relations, guarantor count.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "How-to-apply video",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/dashboard/loan-apply-video",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Home screen",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/dashboard/home",
+                "description": "Everything for the home screen in one call.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Loans",
+          "item": [
+            {
+              "name": "Get a quote",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/loan/quote",
+                "description": "What the loan will cost, before applying. Rates come from server settings. Samples here use 12% and 2%.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"requested_amount\": 20000,\n  \"tenure_months\": 6\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Apply for a loan",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/loan/apply",
+                "description": "Needs a complete profile. Refused while another loan is pending or has unpaid EMIs.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"requested_amount\": 20000,\n  \"tenure_months\": 6,\n  \"purpose\": \"personal\",\n  \"purpose_detail\": \"Home repair\",\n  \"monthly_income\": 35000,\n  \"employment_type\": \"Salaried\",\n  \"company_name\": \"Acme Pvt Ltd\",\n  \"bank_name\": \"HDFC Bank\",\n  \"ifsc_code\": \"HDFC0001234\",\n  \"bank_account_last4\": \"6789\",\n  \"guarantors\": [\n    {\n      \"full_name\": \"Ravi Verma\",\n      \"mobile_number\": \"9000000101\",\n      \"relation\": \"brother\",\n      \"address\": \"Jaipur\",\n      \"aadhaar_last4\": \"1111\",\n      \"pan_last4\": \"222A\"\n    },\n    {\n      \"full_name\": \"Neha Sharma\",\n      \"mobile_number\": \"9000000102\",\n      \"relation\": \"friend\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Cancel an application",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/loan/applications/1/cancel",
+                "description": "Only while pending.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "My applications",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/loan/applications?limit=20&offset=0",
+                "description": "Newest first.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "One application",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/loan/applications/1",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "EMI",
+          "item": [
+            {
+              "name": "EMI summary",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/emi/summary",
+                "description": "`can_pay` stays false until the money is sent. When there is no approved loan, only `has_active_loan: false` is returned.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "EMI schedule",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/emi/schedule",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "How to pay",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/emi/payment-instructions",
+                "description": "UPI, QR and bank details set by staff.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Submit an EMI payment",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/emi/payments/submit",
+                "description": "The EMI becomes `awaiting_proof` until staff decide.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"emi_schedule_id\": 1,\n  \"screenshot_url\": \"{{file_url}}\",\n  \"utr_reference\": \"UPI998877\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "My payments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/emi/payments?limit=20&offset=0",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "One payment",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/emi/payments/1",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Notifications",
+          "item": [
+            {
+              "name": "List notifications",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/notifications?limit=50&offset=0",
+                "description": "Includes `unread_count` for the bell badge. `payload` depends on the category.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Mark one read",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/notifications/read/1",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Mark one read (by body)",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/notifications/read",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notification_id\": 9\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Mark all read",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/notifications/read-all",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Public media",
+          "item": [
+            {
+              "name": "Get a banner image",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/media/banners/1",
+                "description": "Public. Banner `image_url` values already point here.",
+                "auth": {
+                  "type": "noauth"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Part 2: Admin panel",
+      "item": [
+        {
+          "name": "Staff sign-in and profile",
+          "item": [
+            {
+              "name": "Create the first admin",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/auth/register",
+                "description": "Without a token this works only while no admin exists, and creates a super admin. A signed-in super admin can call it any time to add a normal admin.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"first.admin@test.local\",\n  \"password\": \"FirstAdmin123\",\n  \"full_name\": \"First Admin\",\n  \"mobile_number\": \"9000000900\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Staff login",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/auth/login",
+                "description": "Staff tokens last 12 hours and have no refresh token. 5 wrong passwords lock the account for 15 minutes. Limit: 30 logins per IP per 15 minutes.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"first.admin@test.local\",\n  \"password\": \"FirstAdmin123\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "My staff profile",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/auth/me",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Update my staff profile",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/auth/profile",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"full_name\": \"First Admin\",\n  \"mobile_number\": \"9000000901\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Upload my staff photo",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/auth/profile/photo",
+                "description": "Multipart form with `photo`. JPG, PNG, WebP or GIF, up to 3 MB.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "photo",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get my staff photo",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/auth/profile/photo",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Change my staff password",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/auth/password/change",
+                "description": "Ends every staff session for this account and returns a new token. Replace the stored one.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"current_password\": \"FirstAdmin123\",\n  \"new_password\": \"FirstAdmin456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Staff forgot password: send OTP",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/auth/password/forgot/send",
+                "description": "Same response whether or not the email exists. Limit: 10 per IP per hour.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"first.admin@test.local\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Staff forgot password: reset",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/auth/password/forgot/reset",
+                "description": "Ends every staff session for this account.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"first.admin@test.local\",\n  \"otp\": \"{{otp}}\",\n  \"new_password\": \"FirstAdmin789\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Staff lists",
+          "item": [
+            {
+              "name": "How lists work: example",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/list/1?status=disbursed&limit=25&offset=0&sort=created_at&dir=desc",
+                "description": "`counts` gives per-status totals for the cards, and appears on lists that have a main status. Replace `{name}` with a list name below.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Download a list",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/list/1/export?format=xlsx&status=disbursed",
+                "description": "Takes the same filters as the list, without paging. Up to 100,000 rows. Text that a spreadsheet would run as a formula is neutralised.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List: Customers",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/list/users?limit=25",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List: Loans",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/list/loans?limit=25",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List: EMI payments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/list/emi_payments?limit=25",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List: EMI schedule",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/list/emi_schedules?limit=25",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List: Guarantors",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/list/guarantors?limit=25",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List: Customer notifications",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/list/user_notifications?limit=25",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List: Banners",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/list/banners?limit=25",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List: Guide videos",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/list/videos?limit=25",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List: Payment details history",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/list/emi_settings?limit=25",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List: Staff alerts",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/list/admin_alerts?limit=25",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "List: Staff accounts",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/list/admins?limit=25",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Staff dashboard and alerts",
+          "item": [
+            {
+              "name": "Dashboard figures",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/dashboard/summary",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Alerts for the bell",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/alerts?after_id=0",
+                "description": "The panel polls this every 15 seconds and plays the alert sound for `new_items`.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Mark all alerts read",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/alerts/read",
+                "description": "Per staff account.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Staff: customers",
+          "item": [
+            {
+              "name": "Verify or reject KYC",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/users/1/kyc",
+                "description": "Only for submitted KYC. Verifying also marks the bank details verified. The customer gets a push.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"action\": \"verify\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "One customer, all details",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/users/1",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Turn a customer on or off",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/users/1/status",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"active\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete a customer",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/users/1/delete",
+                "description": "Super admin only. Ends their logins. The record stays for history, and the mobile and email cannot be registered again.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Staff: loans",
+          "item": [
+            {
+              "name": "Reject a loan",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/loan/applications/1/reject",
+                "description": "Only while pending. The customer gets a push.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"admin_note\": \"Income proof missing\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Approve a loan",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/loan/applications/1/approve",
+                "description": "Only while pending, and KYC must be verified. Creates the EMI schedule. The customer gets a push.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"admin_note\": \"Checked\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Disburse a loan",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/loan/applications/1/disburse",
+                "description": "Record this after sending the money. EMIs then run from today: the first is due in a month. The customer gets a push.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"disbursement_reference\": \"UTR123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "One loan with guarantors",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/loan/applications/1",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Staff: EMI payments",
+          "item": [
+            {
+              "name": "Reject an EMI payment",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/emi/payments/1/reject",
+                "description": "Only while pending. The EMI returns to pending, or overdue if past due.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"admin_note\": \"Screenshot is blurred\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Approve an EMI payment",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/emi/payments/1/approve",
+                "description": "Check your bank first. Approving the last EMI closes the loan. The customer gets a push.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"admin_note\": \"Received in bank\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Staff: banners, videos and settings",
+          "item": [
+            {
+              "name": "Upload a banner image",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/banners/upload-image",
+                "description": "Multipart form with `image`. JPG, PNG, WebP or GIF, up to 5 MB. Returns a public URL.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "image",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Create a banner",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/banners",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Festival offer\",\n  \"subtitle\": \"Apply today\",\n  \"image_url\": \"https://example.com/banner.png\",\n  \"action_type\": \"screen\",\n  \"action_value\": \"loan_apply\",\n  \"sort_order\": 5,\n  \"is_active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "One banner",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/banners/1",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Update a banner",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/banners/1/update",
+                "description": "Send only what changes.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"is_active\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete a banner",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/banners/1/delete",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Add a guide video",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/videos",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"How to apply\",\n  \"video_url\": \"https://example.com/apply.mp4\",\n  \"video_type\": \"mp4\",\n  \"duration_seconds\": 120,\n  \"sort_order\": 9,\n  \"is_active\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Update a guide video",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/videos/1/update",
+                "description": "Send the whole video, not only what changes.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"How to apply\",\n  \"video_url\": \"https://example.com/apply.mp4\",\n  \"video_type\": \"mp4\",\n  \"duration_seconds\": 120,\n  \"sort_order\": 9,\n  \"is_active\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Delete a guide video",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/videos/1/delete",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Payment details: read",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/settings/emi-collection",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Payment details: save",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/settings/emi-collection",
+                "description": "This is what the app shows under How to pay.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"payee_name\": \"Narainsons Finance\",\n  \"upi_id\": \"narainsons@upi\",\n  \"qr_image_url\": \"https://example.com/qr.png\",\n  \"bank_name\": \"HDFC Bank\",\n  \"bank_account_name\": \"Narainsons Finance Pvt Ltd\",\n  \"bank_account_number\": \"XXXX1234567890\",\n  \"ifsc_code\": \"HDFC0001234\",\n  \"payment_note\": \"Write the loan code in the payment note.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Staff: messages and accounts",
+          "item": [
+            {
+              "name": "Send a message to customers",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/notifications/send",
+                "description": "Saved in the customer's list and sent as push.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": 1,\n  \"title\": \"Office closed\",\n  \"body\": \"Our office is closed on Monday.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Add a staff account",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/auth/register",
+                "description": "Super admin only. Creates a normal admin.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"staff.two@test.local\",\n  \"password\": \"StaffTwo123\",\n  \"full_name\": \"Staff Two\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Turn a staff account on or off",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/admins/1/status",
+                "description": "You cannot change your own account.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"active\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Staff: older list APIs",
+          "item": [
+            {
+              "name": "Dashboard (older)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/dashboard",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Customers (older)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/users?limit=100&offset=0",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Loans (older)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/loan/applications?limit=100&offset=0",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "EMI payments (older)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/emi/payments?limit=100",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Banners (older)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/banners?limit=100",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "All tables (older)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/database?limit=2",
+                "description": "Rows have the table's own columns with secrets replaced by `[redacted]`. The `admins` table appears only for a super admin.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "One table (older)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/database/1?limit=2",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{staff_token}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Internal",
+          "item": [
+            {
+              "name": "Run EMI reminders",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "X-Cron-Secret",
+                    "value": "{{cron_secret}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/internal/emi-reminders",
+                "description": "The server already does this every hour by itself. Marks overdue EMIs and sends reminders.",
+                "auth": {
+                  "type": "noauth"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "var j = {}; try { j = pm.response.json(); } catch (e) {}",
+                      "var u = pm.request.url.toString();",
+                      "if (j.data && j.data.access_token) {",
+                      "  if (u.indexOf('/api/admin') !== -1) { pm.collectionVariables.set('staff_token', j.data.access_token); }",
+                      "  else { pm.collectionVariables.set('access_token', j.data.access_token); pm.collectionVariables.set('refresh_token', j.data.refresh_token); }",
+                      "}",
+                      "if (j.data && j.data.dev_otp) { pm.collectionVariables.set('otp', j.data.dev_otp); }",
+                      "if (j.data && j.data.url) { pm.collectionVariables.set('file_url', j.data.url); }"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

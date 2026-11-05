@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Narainsons Admin</title>
+  <link rel="stylesheet" href="assets/css/admin-shell.css">
+  <link rel="stylesheet" href="assets/css/admin-ui.css">
+</head>
+<body class="ns-admin" data-page="dashboard">
+  <script src="assets/js/config.js"></script>
+  <div class="ns-admin__layout">
+    <div class="ns-sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+    <aside class="ns-sidebar" id="admin-sidebar">
+      <div class="ns-sidebar__brand">
+        <img src="assets/img/logo.jpg" alt="Narainsons">
+        <p class="ns-sidebar__brand-name ns-sidebar__brand-name--sr">Narainsons</p>
+      </div>
+      <div class="ns-sidebar__scroll">
+      <div class="ns-sidebar__quick">
+        <a href="admin-loans.html">+ All applications</a>
+        <a href="admin-dashboard.html#emi-panel">+ Review EMI</a>
+      </div>
+      <nav class="ns-sidebar__nav">
+        <div class="ns-sidebar__section">MAIN</div>
+        <a class="ns-sidebar__link" href="admin-dashboard.html" data-menu-label="Dashboard">Dashboard</a>
+        <a class="ns-sidebar__link" href="admin-profile.html" data-menu-label="My Profile">My Profile</a>
+        <div class="ns-sidebar__section">CUSTOMERS</div>
+        <a class="ns-sidebar__link" href="admin-users.html" data-menu-label="Loan Applicants">Loan applicants</a>
+        <div class="ns-sidebar__section">LOANS &amp; EMI</div>
+        <a class="ns-sidebar__link is-active" href="admin-loans.html" data-menu-label="Loan Applications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          Loan applications
+        </a>
+        <a class="ns-sidebar__link" href="admin-emi-payments.html" data-menu-label="EMI Payments">EMI payments</a>
+        <div class="ns-sidebar__section">APP CMS</div>
+        <a class="ns-sidebar__link" href="admin-banners.html" data-menu-label="Dashboard Banners">Dashboard banners</a>
+        <div class="ns-sidebar__section">DATA</div>
+        <a class="ns-sidebar__link" href="admin-database.html" data-menu-label="MySQL Tables">MySQL tables</a>
+      </nav>
+      </div>
+      <div class="ns-sidebar__footer">
+        <div class="ns-sidebar__footer-avatar" data-admin-initial>H</div>
+        <div class="ns-sidebar__footer-info">
+          <div class="ns-sidebar__footer-name" data-admin-sidebar-name>Admin</div>
+        </div>
+        <button type="button" class="ns-sidebar__logout" data-admin-logout aria-label="Logout">⎋</button>
+      </div>
+    </aside>
+    <div class="ns-main-wrap">
+      <header class="ns-topbar">
+        <button type="button" class="ns-topbar__toggle" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+        <div class="ns-topbar__search-center">
+          <div class="ns-topbar__search">
+            <input type="search" id="sidebar-menu-search" placeholder="Search sidebar menu..." autocomplete="off">
+          </div>
+        </div>
+        <div class="ns-topbar__actions">
+          <button type="button" class="ns-topbar__user" id="profile-menu-btn">
+            <span data-admin-name>Admin</span>
+            <span class="ns-topbar__user-avatar" data-admin-initial>A</span>
+          </button>
+        </div>
+      </header>
+      <main class="ns-main">
+        <div class="page-head"><div><h1>Dashboard</h1><p>Work waiting for you, the loan book and activity by date. Every card opens its list.</p></div></div>
+        <div id="page-root"></div>
+      </main>
+    </div>
+  </div>
+  <script src="assets/js/admin-shell.js"></script>
+  <script src="assets/js/ns-ui.js"></script>
+  <script src="assets/js/ns-pages.js"></script>
+</body>
+</html>

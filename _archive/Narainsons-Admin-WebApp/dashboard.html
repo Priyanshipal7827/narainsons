@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body data-page="dashboard">
+  <script src="assets/js/config.js"></script>
+  <header class="admin-header">
+    <div>
+      <strong>Narainsons Admin</strong>
+      <span id="admin-name" class="muted"></span>
+    </div>
+    <button type="button" class="btn btn--ghost" id="btn-logout">Logout</button>
+  </header>
+  <main class="admin-main">
+    <section class="panel">
+      <h2>Pending loan applications</h2>
+      <div id="loans-table"></div>
+    </section>
+    <section class="panel">
+      <h2>Pending EMI payments (screenshots)</h2>
+      <div id="emi-table"></div>
+    </section>
+  </main>
+  <div id="msg" class="msg hidden"></div>
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>

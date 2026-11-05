@@ -1,0 +1,17 @@
+@charset "UTF-8";
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 2rem;
+  line-height: 1.5;
+}
+
+h1 {
+  color: #002d62;
+}
+
+code {
+  background: #f0f4f8;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}

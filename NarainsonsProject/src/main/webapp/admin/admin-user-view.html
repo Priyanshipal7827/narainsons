@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Applicant profile — Narainsons Admin</title>
+  <link rel="stylesheet" href="assets/css/admin-shell.css">
+  <link rel="stylesheet" href="assets/css/admin-ui.css">
+</head>
+<body class="ns-admin ns-admin--user-view" data-page="user-view">
+  <script src="assets/js/config.js"></script>
+  <div class="ns-admin__layout">
+    <div class="ns-sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+    <aside class="ns-sidebar ns-no-print" id="admin-sidebar">
+      <div class="ns-sidebar__brand">
+        <img src="assets/img/logo.jpg" alt="Narainsons">
+        <p class="ns-sidebar__brand-name ns-sidebar__brand-name--sr">Narainsons</p>
+      </div>
+      <div class="ns-sidebar__scroll">
+      <nav class="ns-sidebar__nav">
+        <div class="ns-sidebar__section">MAIN</div>
+        <a class="ns-sidebar__link" href="admin-dashboard.html" data-menu-label="Dashboard">Dashboard</a>
+        <a class="ns-sidebar__link is-active" href="admin-users.html" data-menu-label="Loan Applicants">Loan applicants</a>
+        <a class="ns-sidebar__link" href="admin-database.html" data-menu-label="MySQL Tables">MySQL tables</a>
+      </nav>
+      </div>
+      <div class="ns-sidebar__footer">
+        <div class="ns-sidebar__footer-avatar" data-admin-initial>H</div>
+        <div class="ns-sidebar__footer-info">
+          <div class="ns-sidebar__footer-name" data-admin-sidebar-name>Admin</div>
+        </div>
+        <button type="button" class="ns-sidebar__logout" data-admin-logout aria-label="Logout">⎋</button>
+      </div>
+    </aside>
+    <div class="ns-main-wrap">
+      <header class="ns-topbar ns-no-print">
+        <button type="button" class="ns-topbar__toggle" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+        <div class="ns-topbar__search-center"></div>
+        <div class="ns-topbar__actions">
+          <div class="ns-topbar__user-menu">
+            <button type="button" class="ns-topbar__user" id="profile-menu-btn">
+              <span data-admin-name>Admin</span>
+              <span class="ns-topbar__user-avatar" data-admin-initial>A</span>
+            </button>
+          </div>
+        </div>
+      </header>
+      <main class="ns-main ns-main--user-view">
+        <div class="ns-user-view-toolbar ns-no-print">
+          <a class="ns-user-view-back" href="admin-users.html">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+            Back to customers
+          </a>
+          <div class="ns-user-view-toolbar__actions">
+            <label class="ns-user-view-status">
+              <span>Active</span>
+              <label class="ns-switch ns-switch--sm">
+                <input type="checkbox" class="ns-switch__input" id="view-active-toggle">
+                <span class="ns-switch__track"></span>
+              </label>
+            </label>
+            <button type="button" class="ns-btn ns-btn--danger ns-btn--sm" id="btn-view-delete">Delete</button>
+          </div>
+        </div>
+
+        <article id="user-view-root" class="ns-user-view-sheet" aria-live="polite">
+          <div class="ns-empty ns-empty--loading"><span class="ns-spinner"></span> Loading applicant…</div>
+        </article>
+
+      </main>
+    </div>
+  </div>
+  <script src="assets/js/admin-shell.js"></script>
+  <script src="assets/js/ns-ui.js"></script>
+  <script src="assets/js/ns-pages.js"></script>
+  <script src="assets/js/admin-user-view.js"></script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Narainsons Loan Workflow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column; the core is a swimlane where each loan stage shows what the customer, staff and system do. Palette from the Narainsons logo: navy, blue, gold. */
+:root {
+  --ground:#f6f8fc; --surface:#ffffff; --ink:#10223f; --muted:#556480; --line:#d9e1ee;
+  --navy:#0b2f5e; --blue:#0b63c5; --gold:#a9780a; --gold-soft:#fbf1d6; --tint:#eaf1fb;
+  --display:"Poppins","Segoe UI",system-ui,sans-serif; --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  color-scheme:dark; --ground:#0a1424; --surface:#111e33; --ink:#e7edf7; --muted:#9dacc4; --line:#26364f;
+  --navy:#9cc4f5; --blue:#6db0f7; --gold:#e8bd4f; --gold-soft:#2e2711; --tint:#14253f;
+} }
+:root[data-theme="dark"] {
+  color-scheme:dark; --ground:#0a1424; --surface:#111e33; --ink:#e7edf7; --muted:#9dacc4; --line:#26364f;
+  --navy:#9cc4f5; --blue:#6db0f7; --gold:#e8bd4f; --gold-soft:#2e2711; --tint:#14253f;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--ground); color:var(--ink); font:400 17px/1.6 var(--body); }
+.page { max-width:1040px; margin:0 auto; padding-block:48px 80px; padding-left:max(24px, env(safe-area-inset-left, 0px)); padding-right:max(24px, env(safe-area-inset-right, 0px)); display:flex; flex-direction:column; gap:56px; }
+h1,h2,h3 { font-family:var(--display); color:var(--navy); margin:0; text-wrap:balance; }
+h1 { font-size:clamp(30px,4.4vw,44px); line-height:1.15; font-weight:700; }
+h2 { font-size:25px; line-height:1.25; font-weight:700; }
+h3 { font-size:16px; line-height:1.3; font-weight:600; }
+p { margin:0; max-width:68ch; }
+ul { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; }
+.stack { display:flex; flex-direction:column; gap:16px; }
+.lede { font-size:19px; color:var(--muted); }
+.label { font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.people { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:28px; }
+.people > div { display:flex; flex-direction:column; gap:6px; border-top:3px solid var(--gold); padding-top:12px; }
+.people p { font-size:16px; }
+.track { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.track span { font-size:14px; font-weight:600; padding:4px 12px; border-radius:99px; border:1px solid var(--line); background:var(--surface); }
+.track i { font-style:normal; color:var(--muted); }
+.notice { background:var(--gold-soft); padding:16px 20px; display:flex; flex-direction:column; gap:6px; }
+.notice p { max-width:none; }
+.lanes { display:flex; flex-direction:column; }
+.lane-head, .stage { display:grid; grid-template-columns:190px repeat(3,minmax(0,1fr)); gap:20px; }
+.lane-head { padding-bottom:8px; border-bottom:2px solid var(--navy); }
+.stage { padding-block:18px; border-bottom:1px solid var(--line); }
+.stage > div { font-size:16px; line-height:1.5; }
+.stage .name { display:flex; flex-direction:column; gap:2px; }
+.stage .name b { font:700 13px var(--display); color:var(--gold); font-variant-numeric:tabular-nums; }
+.stage .idle { color:var(--muted); }
+.stage .tag { display:none; }
+.tw { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:16px; }
+th { text-align:left; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:600; }
+th,td { padding:9px 16px 9px 0; border-bottom:1px solid var(--line); vertical-align:top; }
+td:first-child { font-weight:600; }
+td.num { font-variant-numeric:tabular-nums; white-space:nowrap; }
+.two { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:32px; }
+.two > div { display:flex; flex-direction:column; gap:10px; }
+.money { display:flex; flex-wrap:wrap; gap:14px 34px; border-block:2px solid var(--gold); padding-block:14px; }
+.money div { display:flex; flex-direction:column; }
+.money b { font:600 21px var(--display); color:var(--navy); font-variant-numeric:tabular-nums; }
+.money span { font-size:14px; color:var(--muted); }
+@media (max-width:820px) {
+  .page { padding-block:28px 56px; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); gap:44px; }
+  .people, .two { grid-template-columns:minmax(0,1fr); gap:20px; }
+  .lane-head { display:none; }
+  .stage { grid-template-columns:minmax(0,1fr); gap:10px; }
+  .stage .tag { display:block; font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+}
+@page { size:A4 landscape; margin:12mm 14mm; }
+@media print {
+  :root, :root:not([data-theme="light"]), :root[data-theme="dark"] {
+    color-scheme:light; --ground:#ffffff; --surface:#ffffff; --ink:#10223f; --muted:#556480; --line:#d9e1ee;
+    --navy:#0b2f5e; --blue:#0b63c5; --gold:#a9780a; --gold-soft:#fbf1d6; --tint:#eaf1fb;
+  }
+  * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body { font-size:11.5pt; }
+  .page { max-width:none; padding:0; gap:26px; }
+  .stage { display:grid; grid-template-columns:150px repeat(3,minmax(0,1fr)); gap:18px; }
+  /* Labels sit in every row, so a stage still reads correctly after a page break. */
+  .lane-head { display:none; }
+  .stage .tag { display:block; font-size:9pt; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+  .people { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .two { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  h2 { break-after:avoid; }
+  .stage, tr, .notice, .money, .two, .people, section { break-inside:avoid; }
+}
+</style>
+<div class="page">
+
+<header class="stack">
+  <h1>How the Narainsons app works, from start to finish</h1>
+  <p class="lede">The full process from a customer's first login to the last EMI of their loan, and who does what at each stage.</p>
+</header>
+
+<section class="stack">
+  <h2>The three parts of the system</h2>
+  <div class="people">
+    <div><h3>Customer: mobile app</h3><p>The customer signs in, completes KYC, applies for a loan and sends proof of EMI payments.</p></div>
+    <div><h3>Staff: admin panel</h3><p>Your team works in a browser to check KYC, approve loans, record money sent and verify EMI payments.</p></div>
+    <div><h3>System: server</h3><p>It stores all data, checks the rules, calculates EMIs, and sends OTPs, push notifications and reminders.</p></div>
+  </div>
+</section>
+
+<section class="stack">
+  <h2>The whole journey at a glance</h2>
+  <div class="track">
+    <span>Login</span><i>→</i><span>Profile and KYC</span><i>→</i><span>KYC check</span><i>→</i><span>Loan application</span><i>→</i><span>Approval</span><i>→</i><span>Money sent</span><i>→</i><span>EMI payment</span><i>→</i><span>Loan closed</span>
+  </div>
+  <div class="notice">
+    <h3>Money does not move through the app</h3>
+    <p>The app has no payment gateway at this stage. Staff send the loan amount from your bank and enter the UTR number in the admin panel. Customers pay EMIs by UPI, QR code or bank transfer and upload a screenshot in the app. Staff then check the bank and approve the payment.</p>
+  </div>
+</section>
+
+<section class="stack">
+  <h2>Who does what at each stage</h2>
+  <div class="lanes">
+    <div class="lane-head label"><div>Stage</div><div>Customer</div><div>Staff</div><div>System</div></div>
+
+    <div class="stage">
+      <div class="name"><b>1</b><h3>Login</h3></div>
+      <div><span class="tag">Customer</span>Enters a mobile number or email and signs in with an OTP. Can also set a password later.</div>
+      <div class="idle"><span class="tag">Staff</span>Nothing to do</div>
+      <div><span class="tag">System</span>Sends the OTP by SMS or email, valid for 10 minutes. Creates the account on first use.</div>
+    </div>
+
+    <div class="stage">
+      <div class="name"><b>2</b><h3>Profile and KYC</h3></div>
+      <div><span class="tag">Customer</span>Completes three steps: personal details; address, job and income; then Aadhaar, PAN, bank details and consent.</div>
+      <div class="idle"><span class="tag">Staff</span>Nothing to do</div>
+      <div><span class="tag">System</span>Allows the steps only in order. Stores documents securely. Marks KYC as "submitted".</div>
+    </div>
+
+    <div class="stage">
+      <div class="name"><b>3</b><h3>KYC check</h3></div>
+      <div><span class="tag">Customer</span>Gets a notification with the result. If rejected, reads the reason and submits KYC again.</div>
+      <div><span class="tag">Staff</span>Views the Aadhaar and PAN in the admin panel, then verifies the KYC or rejects it with a reason.</div>
+      <div><span class="tag">System</span>Updates the status and sends the customer a push notification.</div>
+    </div>
+
+    <div class="stage">
+      <div class="name"><b>4</b><h3>Loan application</h3></div>
+      <div><span class="tag">Customer</span>Sees banners and a guide video on the home screen. Chooses an amount and duration to see the EMI. Applies with a purpose and guarantors. Can cancel while the application is pending.</div>
+      <div class="idle"><span class="tag">Staff</span>The new application appears in the list</div>
+      <div><span class="tag">System</span>Checks the amount, duration and number of guarantors. Blocks a second application while a loan is open.</div>
+    </div>
+
+    <div class="stage">
+      <div class="name"><b>5</b><h3>Approval</h3></div>
+      <div class="idle"><span class="tag">Customer</span>Waits for a notification</div>
+      <div><span class="tag">Staff</span>Reviews the application and approves or rejects it.</div>
+      <div><span class="tag">System</span>Blocks approval until KYC is verified. On approval, creates the EMI schedule and sends a push notification.</div>
+    </div>
+
+    <div class="stage">
+      <div class="name"><b>6</b><h3>Money sent</h3></div>
+      <div><span class="tag">Customer</span>Gets a notification and sees the EMI dates in the app.</div>
+      <div><span class="tag">Staff</span>Sends the money from the bank, then clicks Disburse in the admin panel and enters the UTR number.</div>
+      <div><span class="tag">System</span>Sets the EMI dates, with the first EMI due one month later. EMIs can now be paid.</div>
+    </div>
+
+    <div class="stage">
+      <div class="name"><b>7</b><h3>EMI payment</h3></div>
+      <div><span class="tag">Customer</span>Gets the UPI, QR or bank details from the app and pays. Sends the screenshot and UTR in the app.</div>
+      <div><span class="tag">Staff</span>Checks the payment in the bank and approves or rejects it. Can add a reason for rejection.</div>
+      <div><span class="tag">System</span>Refuses a claim below the EMI amount. Allows only one pending proof per EMI. Sends the result by push and counts the remaining EMIs.</div>
+    </div>
+
+    <div class="stage">
+      <div class="name"><b>8</b><h3>Reminders</h3></div>
+      <div><span class="tag">Customer</span>Sees the reminder and pays the EMI on time.</div>
+      <div class="idle"><span class="tag">Staff</span>Nothing to do</div>
+      <div><span class="tag">System</span>Checks every hour on its own. Sends one reminder a day, starting 3 days before the due date. After the due date it marks the EMI "overdue" and keeps reminding.</div>
+    </div>
+
+    <div class="stage">
+      <div class="name"><b>9</b><h3>Loan closed</h3></div>
+      <div><span class="tag">Customer</span>Gets a notification. Can see the old loan's record and apply for a new loan.</div>
+      <div class="idle"><span class="tag">Staff</span>Only needs to approve the last EMI</div>
+      <div><span class="tag">System</span>Closes the loan automatically when the last EMI is approved.</div>
+    </div>
+  </div>
+</section>
+
+<section class="two">
+  <div>
+    <h2>Loan status</h2>
+    <div class="track"><span>Pending</span><i>→</i><span>Approved</span><i>→</i><span>Disbursed</span><i>→</i><span>Closed</span></div>
+    <div class="tw"><table>
+      <tbody>
+        <tr><td>Pending</td><td>Application received, waiting for staff to decide</td></tr>
+        <tr><td>Approved</td><td>Staff accepted it, money not sent yet</td></tr>
+        <tr><td>Disbursed</td><td>Money sent, EMIs are running</td></tr>
+        <tr><td>Closed</td><td>All EMIs are paid</td></tr>
+        <tr><td>Rejected</td><td>Staff declined it</td></tr>
+        <tr><td>Cancelled</td><td>The customer cancelled it</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div>
+    <h2>EMI status</h2>
+    <div class="track"><span>Pending</span><i>→</i><span>Awaiting proof</span><i>→</i><span>Paid</span></div>
+    <div class="tw"><table>
+      <tbody>
+        <tr><td>Pending</td><td>Still to be paid</td></tr>
+        <tr><td>Awaiting proof</td><td>Customer sent proof, staff will check it</td></tr>
+        <tr><td>Paid</td><td>Staff approved the payment</td></tr>
+        <tr><td>Overdue</td><td>The due date passed without payment</td></tr>
+      </tbody>
+    </table></div>
+    <p>If staff reject the proof, the EMI returns to pending, or to overdue if the due date has passed.</p>
+  </div>
+</section>
+
+<section class="stack">
+  <h2>Loan rules</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Rule</th><th>Current setting</th></tr></thead>
+    <tbody>
+      <tr><td>Loan amount</td><td class="num">₹10,000 to ₹50,000, in steps of ₹5,000</td></tr>
+      <tr><td>Duration</td><td class="num">3 to 24 months</td></tr>
+      <tr><td>Guarantors</td><td>1 per ₹10,000, minimum 1. So ₹50,000 needs 5. Each needs a different mobile number.</td></tr>
+      <tr><td>Interest and processing fee</td><td>Currently 0%. These can be changed in the settings.</td></tr>
+      <tr><td>Loans at one time</td><td>One. A new loan is allowed after all EMIs of the last one are paid.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="label">Example: ₹20,000 loan over 6 months</p>
+  <div class="money">
+    <div><b>₹3,333.33</b><span>EMI at the current setting (0% interest)</span></div>
+    <div><b>₹20,000</b><span>Total repaid at 0% interest</span></div>
+    <div><b>₹3,450.97</b><span>EMI at 12% yearly interest</span></div>
+    <div><b>₹20,705.81</b><span>Total repaid at 12% interest</span></div>
+  </div>
+  <p>The last EMI can differ by a few paise so the total comes out exact. The 12% rate is only an example.</p>
+</section>
+
+<section class="stack">
+  <h2>When the customer gets a notification</h2>
+  <p>Each notification arrives as a push on the phone and is also saved in the app's notification list. Customers can turn push off in settings.</p>
+  <div class="tw"><table>
+    <thead><tr><th>About</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td>KYC</td><td>When verified, or when rejected, with the reason</td></tr>
+      <tr><td>Loan</td><td>When approved, rejected, disbursed or closed</td></tr>
+      <tr><td>EMI payment</td><td>When proof is received, and when it is approved or rejected</td></tr>
+      <tr><td>EMI reminder</td><td>Once a day from 3 days before the due date, and while overdue</td></tr>
+      <tr><td>General</td><td>When staff send the customer a message</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="two">
+  <div>
+    <h2>What's in the admin panel</h2>
+    <ul>
+      <li><strong>Dashboard:</strong> work waiting, the loan book and activity by date. Each card opens its list.</li>
+      <li><strong>Notifications:</strong> staff alerts, messages sent to customers, and sending a new message</li>
+      <li><strong>Customers:</strong> customer details and KYC review</li>
+      <li><strong>Loan applications:</strong> approve, reject and disburse</li>
+      <li><strong>Guarantors, EMI payments, EMI schedule:</strong> check proof and see what is overdue</li>
+      <li><strong>Home banners, payment details, videos:</strong> what appears in the app</li>
+      <li><strong>Staff accounts, All data, My profile:</strong> staff and records</li>
+    </ul>
+    <p>Every list has search, date and advanced filters, 25 to 500 rows per page, and CSV or Excel download.</p>
+    <p>When a new customer signs up, a loan is applied for, KYC is submitted or EMI proof arrives, staff get a loud alert in the panel.</p>
+  </div>
+  <div>
+    <h2>Two staff levels</h2>
+    <div class="tw"><table>
+      <thead><tr><th>Task</th><th>Admin</th><th>Super admin</th></tr></thead>
+      <tbody>
+        <tr><td>KYC, loan and EMI decisions</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Change banners</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Block or delete a customer</td><td>No</td><td>Yes</td></tr>
+        <tr><td>Add a new admin</td><td>No</td><td>Yes</td></tr>
+        <tr><td>Change UPI and bank details</td><td>No</td><td>Yes</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="stack">
+  <h2>Data security</h2>
+  <ul>
+    <li>Passwords are never stored as plain text, only as a secure hash.</li>
+    <li>5 wrong OTPs cancel the OTP. 5 wrong passwords lock the account for 15 minutes.</li>
+    <li>Repeated OTP requests are limited, which controls SMS cost and misuse.</li>
+    <li>Changing a password signs the user out of all other devices. An admin login lasts 12 hours.</li>
+    <li>Only the customer and your staff can see that customer's Aadhaar, PAN and payment screenshots.</li>
+    <li>The app does not store customers' contacts or gallery. This setting is turned off.</li>
+  </ul>
+</section>
+
+<section class="stack">
+  <h2>Before going live</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Task</th><th>Why</th><th>Who</th></tr></thead>
+    <tbody>
+      <tr><td>Set interest and processing fee</td><td>Both are currently 0%</td><td>Client</td></tr>
+      <tr><td>Decide on a late fee</td><td>No late fee is charged today</td><td>Client</td></tr>
+      <tr><td>Add real UPI, QR and bank details</td><td>Customers will pay EMIs to these</td><td>Client and team</td></tr>
+      <tr><td>Connect the mobile app to the API</td><td>The backend APIs are ready for the app developer to connect</td><td>App developer</td></tr>
+      <tr><td>Final test of push, SMS and email on real phones</td><td>Testing on real devices is still to be done</td><td>Team</td></tr>
+      <tr><td>Live server with HTTPS</td><td>Needed to keep customer data secure in transit</td><td>Team</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+</div>
+</html>

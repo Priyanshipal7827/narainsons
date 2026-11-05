@@ -1,0 +1,23 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
+.admin-auth { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.admin-card { background: #1e293b; padding: 28px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,.35); }
+.admin-card h1 { margin: 0 0 8px; font-size: 1.35rem; }
+.muted { color: #94a3b8; font-size: 0.9rem; }
+label { display: block; margin-top: 12px; font-size: 0.85rem; }
+input { width: 100%; margin-top: 4px; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; }
+.btn { margin-top: 16px; width: 100%; padding: 10px; border: none; border-radius: 8px; background: #eab308; color: #0f172a; font-weight: 600; cursor: pointer; }
+.btn--ghost { width: auto; background: transparent; color: #eab308; border: 1px solid #eab308; margin-top: 0; }
+.links { margin-top: 12px; font-size: 0.9rem; }
+.links a { color: #38bdf8; }
+.msg { margin-top: 12px; padding: 10px; border-radius: 8px; font-size: 0.9rem; }
+.msg.error { background: #7f1d1d; }
+.msg.ok { background: #14532d; }
+.hidden { display: none !important; }
+.admin-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: #1e293b; border-bottom: 1px solid #334155; }
+.admin-main { padding: 24px; max-width: 1100px; margin: 0 auto; }
+.panel { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+.panel h2 { margin-top: 0; font-size: 1.1rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid #334155; padding: 8px; text-align: left; }
+button { cursor: pointer; margin-right: 4px; }

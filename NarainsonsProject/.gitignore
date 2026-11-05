@@ -1,0 +1,18 @@
+/target/
+/build/
+*.class
+*.jar
+*.war
+*.log
+.idea/
+*.iml
+
+# Local DB credentials — use db.properties.example
+src/main/resources/db.properties
+src/main/resources/secrets.properties
+src/main/resources/app.properties
+scripts/db/seed-users-credentials.txt
+scripts/api-test/payloads/
+.run/
+src/main/resources/firebase-service-account.json
+scripts/api-test/__pycache__/

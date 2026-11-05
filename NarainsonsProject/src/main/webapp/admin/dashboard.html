@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Narainsons App</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-context="dashboard">
+  <script src="assets/js/config.js"></script>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar__brand">
+        <img src="assets/img/logo.jpg" alt="">
+        <span>Narain<em>sons</em></span>
+      </div>
+      <nav class="sidebar__nav">
+        <div class="nav-section">Main</div>
+        <a class="nav-link active" href="dashboard.html">Dashboard</a>
+        <a class="nav-link" href="login.html">Login</a>
+      </nav>
+      <div class="sidebar__footer">
+        <button type="button" class="btn btn-outline" id="btn-logout" style="width:100%;color:#fff;border-color:rgba(255,255,255,0.3)">Logout</button>
+      </div>
+    </aside>
+    <div class="main-wrap">
+      <header class="topbar">
+        <input class="topbar__search" type="search" placeholder="Search…">
+        <div class="topbar__actions">
+          <span id="user-name">…</span>
+          <div class="avatar" id="avatar-letter">N</div>
+        </div>
+      </header>
+      <main class="content">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-desc">Yeh frontend alag hai — <code>Narainsons-WebApp</code>. Backend: <code>NarainsonsProject</code>.</p>
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-card--navy"><div class="kpi-card__label">Step</div><div class="kpi-card__value" id="kpi-step">0</div></div>
+          <div class="kpi-card kpi-card--blue"><div class="kpi-card__label">Complete</div><div class="kpi-card__value" id="kpi-complete">—</div></div>
+          <div class="kpi-card kpi-card--gold"><div class="kpi-card__label">Accent</div><div class="kpi-card__value" style="font-size:1rem">Gold</div></div>
+        </div>
+        <div class="profile-grid">
+          <div class="profile-hero">
+            <div class="avatar" id="profile-avatar">N</div>
+            <h2 id="profile-name">—</h2>
+            <p id="profile-email">—</p>
+            <span class="badge">Active</span>
+            <ul class="meta-list">
+              <li><span>Mobile</span><strong id="meta-mobile">—</strong></li>
+              <li><span>Onboarding</span><strong id="meta-step">—</strong></li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card__header">Brand colors (logo)</div>
+            <div class="card__body">
+              <p>Navy <code>#002D62</code> · Blue <code>#0073CF</code> · Gold <code>#F5AF02</code></p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+         version="5.0"
+         metadata-complete="true">
+
+  <display-name>NarainsonsProject</display-name>
+
+  <!-- Do NOT put admin/login.html here: welcome-file keeps URL at /, so relative CSS/JS break. -->
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+
+  <servlet>
+    <servlet-name>RootRedirectServlet</servlet-name>
+    <servlet-class>com.narainsons.servlet.RootRedirectServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RootRedirectServlet</servlet-name>
+    <url-pattern></url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>RootRedirectServlet</servlet-name>
+    <url-pattern>/index.html</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>HealthServlet</servlet-name>
+    <servlet-class>com.narainsons.servlet.HealthServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>HealthServlet</servlet-name>
+    <url-pattern>/api/health</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>AuthServlet</servlet-name>
+    <servlet-class>com.narainsons.servlet.AuthServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AuthServlet</servlet-name>
+    <url-pattern>/api/auth/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>UserServlet</servlet-name>
+    <servlet-class>com.narainsons.servlet.UserServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>UserServlet</servlet-name>
+    <url-pattern>/api/user/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>DashboardServlet</servlet-name>
+    <servlet-class>com.narainsons.servlet.DashboardServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DashboardServlet</servlet-name>
+    <url-pattern>/api/dashboard/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>LoanServlet</servlet-name>
+    <servlet-class>com.narainsons.servlet.LoanServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>LoanServlet</servlet-name>
+    <url-pattern>/api/loan/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>NotificationServlet</servlet-name>
+    <servlet-class>com.narainsons.servlet.NotificationServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>NotificationServlet</servlet-name>
+    <url-pattern>/api/notifications</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>NotificationServlet</servlet-name>
+    <url-pattern>/api/notifications/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>EmiServlet</servlet-name>
+    <servlet-class>com.narainsons.servlet.EmiServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>EmiServlet</servlet-name>
+    <url-pattern>/api/emi/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>AdminAuthServlet</servlet-name>
+    <servlet-class>com.narainsons.servlet.AdminAuthServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AdminAuthServlet</servlet-name>
+    <url-pattern>/api/admin/auth/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>AdminServlet</servlet-name>
+    <servlet-class>com.narainsons.servlet.AdminServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AdminServlet</servlet-name>
+    <url-pattern>/api/admin/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>MediaServlet</servlet-name>
+    <servlet-class>com.narainsons.servlet.MediaServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>MediaServlet</servlet-name>
+    <url-pattern>/api/media/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>FileServlet</servlet-name>
+    <servlet-class>com.narainsons.servlet.FileServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>FileServlet</servlet-name>
+    <url-pattern>/api/v1/files</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>FileServlet</servlet-name>
+    <url-pattern>/api/v1/files/*</url-pattern>
+  </servlet-mapping>
+
+  <!-- Versioned routes for the mobile app. The older /api/... paths above still work. -->
+  <servlet-mapping>
+    <servlet-name>HealthServlet</servlet-name>
+    <url-pattern>/api/v1/health</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>AuthServlet</servlet-name>
+    <url-pattern>/api/v1/auth/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>UserServlet</servlet-name>
+    <url-pattern>/api/v1/user/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>DashboardServlet</servlet-name>
+    <url-pattern>/api/v1/dashboard/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>LoanServlet</servlet-name>
+    <url-pattern>/api/v1/loan/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>EmiServlet</servlet-name>
+    <url-pattern>/api/v1/emi/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>NotificationServlet</servlet-name>
+    <url-pattern>/api/v1/notifications</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>NotificationServlet</servlet-name>
+    <url-pattern>/api/v1/notifications/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>InternalEmiReminderServlet</servlet-name>
+    <servlet-class>com.narainsons.servlet.InternalEmiReminderServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>InternalEmiReminderServlet</servlet-name>
+    <url-pattern>/api/internal/emi-reminders</url-pattern>
+  </servlet-mapping>
+
+  <listener>
+    <listener-class>com.narainsons.config.AppShutdownListener</listener-class>
+  </listener>
+
+  <filter>
+    <filter-name>SecurityHeadersFilter</filter-name>
+    <filter-class>com.narainsons.filter.SecurityHeadersFilter</filter-class>
+  </filter>
+  <filter>
+    <filter-name>ErrorHandlingFilter</filter-name>
+    <filter-class>com.narainsons.filter.ErrorHandlingFilter</filter-class>
+  </filter>
+  <filter>
+    <filter-name>CachedBodyFilter</filter-name>
+    <filter-class>com.narainsons.filter.CachedBodyFilter</filter-class>
+  </filter>
+  <filter>
+    <filter-name>CorsFilter</filter-name>
+    <filter-class>com.narainsons.filter.CorsFilter</filter-class>
+  </filter>
+  <filter>
+    <filter-name>RequestLoggingFilter</filter-name>
+    <filter-class>com.narainsons.filter.RequestLoggingFilter</filter-class>
+  </filter>
+  <filter>
+    <filter-name>AuthenticationFilter</filter-name>
+    <filter-class>com.narainsons.filter.AuthenticationFilter</filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>SecurityHeadersFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>ErrorHandlingFilter</filter-name>
+    <url-pattern>/api/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>CachedBodyFilter</filter-name>
+    <url-pattern>/api/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>CorsFilter</filter-name>
+    <url-pattern>/api/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>RequestLoggingFilter</filter-name>
+    <url-pattern>/api/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>AuthenticationFilter</filter-name>
+    <url-pattern>/api/*</url-pattern>
+  </filter-mapping>
+
+</web-app>

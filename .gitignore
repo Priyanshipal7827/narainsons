@@ -1,0 +1,11 @@
+.metadata/
+Servers/
+*.log
+*.class
+
+# Local secrets. Copy from *.example
+NarainsonsProject/src/main/resources/db.properties
+NarainsonsProject/src/main/resources/secrets.properties
+NarainsonsProject/src/main/resources/app.properties
+NarainsonsProject/scripts/db/seed-users-credentials.txt
+NarainsonsProject/src/main/resources/firebase-service-account.json

@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Narainsons: Run app",
+      "type": "process",
+      "command": "powershell",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/NarainsonsProject/scripts/deploy/run-local.ps1"],
+      "group": { "kind": "build", "isDefault": true },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Narainsons: Stop app",
+      "type": "process",
+      "command": "powershell",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/NarainsonsProject/scripts/deploy/run-local.ps1", "-Stop"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Narainsons: Create or update database",
+      "type": "process",
+      "command": "java",
+      "args": ["-cp", "src/main/webapp/WEB-INF/lib/*", "scripts/db/InitDatabase.java"],
+      "options": { "cwd": "${workspaceFolder}/NarainsonsProject" },
+      "problemMatcher": []
+    }
+  ]
+}
